@@ -31,7 +31,7 @@ async function createAccount(formData: FormData): Promise<FormState> {
   // Server Actions reject cross-origin requests, so Origin is trustworthy here.
   const origin = (await headers()).get("origin");
   const supabase = await createClient();
-  const { error } = await supabase.auth.signUp({
+  const { data, error } = await supabase.auth.signUp({
     email: parsed.data.email,
     password: parsed.data.password,
     options: {
@@ -49,9 +49,13 @@ async function createAccount(formData: FormData): Promise<FormState> {
         error: "Too many attempts. Please wait a few minutes and try again.",
       };
     }
-    // Existing emails are not revealed: Supabase returns success for them too.
+    // Existing emails are not revealed: with email confirmation on, Supabase
+    // returns success for them too.
     return { error: "We couldn't create your account. Please try again." };
   }
+
+  // With email confirmation disabled, Supabase signs the user in immediately.
+  if (data.session) redirect("/onboarding");
 
   redirect(`/check-email?email=${encodeURIComponent(parsed.data.email)}`);
 }
