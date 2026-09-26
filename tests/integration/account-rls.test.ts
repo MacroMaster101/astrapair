@@ -136,13 +136,11 @@ describe("profiles RLS", () => {
 
 describe("consents and onboarding", () => {
   it("rejects inserting consents directly", async () => {
-    const { error } = await alice.client
-      .from("consents")
-      .insert({
-        user_id: alice.id,
-        consent_type: "terms",
-        policy_version: "forged",
-      });
+    const { error } = await alice.client.from("consents").insert({
+      user_id: alice.id,
+      consent_type: "terms",
+      policy_version: "forged",
+    });
     expect(error?.code).toBe("42501");
   });
 
