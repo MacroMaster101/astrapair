@@ -1,14 +1,31 @@
+import Link from "next/link";
+import { Logo } from "@/components/brand/logo";
+import { buttonVariants } from "@/components/ui/button";
+
 export default function Home() {
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center gap-4 px-4 text-center">
-      <h1 className="text-4xl font-semibold tracking-tight">AstraPair</h1>
-      <p className="max-w-md text-lg text-zinc-600 dark:text-zinc-400">
+    <main className="flex flex-1 flex-col items-center justify-center gap-6 px-4 py-16 text-center">
+      <h1>
+        <Logo priority className="w-56 sm:w-72" />
+      </h1>
+      <p className="text-muted-foreground max-w-md text-lg">
         Birth charts, compatibility insights, and AI-guided relationship
         readings for couples.
       </p>
-      <p className="max-w-md text-sm text-zinc-500">
+      <div className="flex gap-3">
+        <Link href="/signup" className={buttonVariants()}>
+          Get started
+        </Link>
+        <Link href="/login" className={buttonVariants({ variant: "outline" })}>
+          Sign in
+        </Link>
+      </div>
+      <p className="text-muted-foreground max-w-md text-sm">
         Astrology is offered for entertainment and self-reflection, not as
-        professional advice.
+        professional advice.{" "}
+        <Link href="/legal/disclaimer" className="underline underline-offset-4">
+          Disclaimer
+        </Link>
       </p>
     </main>
   );
