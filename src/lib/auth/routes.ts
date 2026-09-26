@@ -1,8 +1,14 @@
 export const AFTER_SIGN_IN_PATH = "/dashboard";
 export const SIGN_IN_PATH = "/login";
 
-const PROTECTED_PREFIXES = ["/dashboard", "/settings", "/onboarding"];
-const GUEST_ONLY_PREFIXES = ["/login", "/signup"];
+// /reset-password needs the recovery session created by the emailed link.
+const PROTECTED_PREFIXES = [
+  "/dashboard",
+  "/settings",
+  "/onboarding",
+  "/reset-password",
+];
+const GUEST_ONLY_PREFIXES = ["/login", "/signup", "/forgot-password"];
 
 function matches(pathname: string, prefix: string) {
   return pathname === prefix || pathname.startsWith(`${prefix}/`);

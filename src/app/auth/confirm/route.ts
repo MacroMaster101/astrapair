@@ -18,7 +18,10 @@ export async function GET(request: NextRequest) {
   const { searchParams, origin } = request.nextUrl;
   const tokenHash = searchParams.get("token_hash");
   const type = searchParams.get("type") as EmailOtpType | null;
-  const next = safeNextPath(searchParams.get("next"), "/onboarding");
+  const next = safeNextPath(
+    searchParams.get("next"),
+    type === "recovery" ? "/reset-password" : "/onboarding",
+  );
 
   if (tokenHash && type && EMAIL_OTP_TYPES.has(type)) {
     const supabase = await createClient();

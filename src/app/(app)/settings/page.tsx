@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { BackLink } from "@/components/back-link";
+import { buttonVariants } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -9,6 +10,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { getProfile } from "@/lib/auth/session";
+import { cn } from "@/lib/utils";
 import { ProfileForm } from "./profile-form";
 
 export const metadata: Metadata = { title: "Settings · AstraPair" };
@@ -31,6 +33,22 @@ export default async function SettingsPage() {
         </CardHeader>
         <CardContent>
           <ProfileForm displayName={profile.display_name ?? ""} />
+        </CardContent>
+      </Card>
+      <Card>
+        <CardHeader>
+          <CardTitle>Password</CardTitle>
+          <CardDescription>
+            Changing it signs you out on your other devices.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Link
+            href="/reset-password"
+            className={cn(buttonVariants({ variant: "outline" }), "h-10 px-4")}
+          >
+            Change password
+          </Link>
         </CardContent>
       </Card>
       <Card>

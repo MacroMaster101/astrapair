@@ -4,6 +4,7 @@ import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { safeNextPath } from "@/lib/auth/routes";
 import {
+  forgotPasswordSchema,
   formValues,
   signInSchema,
   signUpSchema,
@@ -11,6 +12,10 @@ import {
   type FormState,
 } from "@/lib/auth/validation";
 import { createClient } from "@/lib/supabase/server";
+
+const RATE_LIMITED: FormState = {
+  error: "Too many attempts. Please wait a few minutes and try again.",
+};
 
 export async function signUp(
   _prev: FormState,
@@ -45,9 +50,7 @@ async function createAccount(formData: FormData): Promise<FormState> {
       return { fieldErrors: { password: ["Choose a stronger password."] } };
     }
     if (error.code === "over_email_send_rate_limit" || error.status === 429) {
-      return {
-        error: "Too many attempts. Please wait a few minutes and try again.",
-      };
+      return RATE_LIMITED;
     }
     // Existing emails are not revealed: with email confirmation on, Supabase
     // returns success for them too.
@@ -85,13 +88,33 @@ async function authenticate(formData: FormData): Promise<FormState> {
           "Please confirm your email address first. Check your inbox for the link.",
       };
     }
-    if (error.status === 429) {
-      return {
-        error: "Too many attempts. Please wait a few minutes and try again.",
-      };
-    }
+    if (error.status === 429) return RATE_LIMITED;
     return { error: "Incorrect email or password." };
   }
 
   redirect(safeNextPath(formData.get("next")?.toString()));
+}
+
+export async function requestPasswordReset(
+  _prev: FormState,
+  formData: FormData,
+): Promise<FormState> {
+  const values = formValues(formData, ["email"]);
+  const parsed = forgotPasswordSchema.safeParse(values);
+  if (!parsed.success) return { ...toFieldErrors(parsed.error), values };
+
+  const origin = (await headers()).get("origin");
+  const supabase = await createClient();
+  const { error } = await supabase.auth.resetPasswordForEmail(
+    parsed.data.email,
+    { redirectTo: `${origin}/auth/callback?next=/reset-password` },
+  );
+
+  if (error?.status === 429) return { ...RATE_LIMITED, values };
+  if (error) {
+    return { error: "We couldn't send the email. Please try again.", values };
+  }
+
+  // Same response whether or not the account exists, so emails can't be probed.
+  return { message: parsed.data.email, values };
 }
