@@ -1,10 +1,13 @@
 import Link from "next/link";
+import { Logo } from "@/components/brand/logo";
 import { buttonVariants } from "@/components/ui/button";
 
 export default function Home() {
   return (
     <main className="flex flex-1 flex-col items-center justify-center gap-6 px-4 py-16 text-center">
-      <h1 className="text-4xl font-semibold tracking-tight">AstraPair</h1>
+      <h1>
+        <Logo priority className="w-56 sm:w-72" />
+      </h1>
       <p className="text-muted-foreground max-w-md text-lg">
         Birth charts, compatibility insights, and AI-guided relationship
         readings for couples.

@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { LogoLockup } from "@/components/brand/logo";
 import { Button } from "@/components/ui/button";
 import { getProfile } from "@/lib/auth/session";
 
@@ -14,8 +15,8 @@ export default async function AppLayout({ children }: LayoutProps<"/">) {
           aria-label="Main"
           className="mx-auto flex w-full max-w-4xl items-center gap-4 px-4 py-3"
         >
-          <Link href="/dashboard" className="font-semibold tracking-tight">
-            AstraPair
+          <Link href="/dashboard" aria-label="AstraPair dashboard">
+            <LogoLockup />
           </Link>
           <Link
             href="/settings"
