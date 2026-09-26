@@ -141,3 +141,20 @@ dist
 vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
 .vite/
+
+# Next.js
+next-env.d.ts
+.vercel
+
+# Supabase CLI
+supabase/.branches
+supabase/.temp
+
+# Playwright
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/
+
+# Sentry
+.env.sentry-build-plugin
