@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useActionState } from "react";
 import { FormError, FormField } from "@/components/form-field";
 import { Button } from "@/components/ui/button";
@@ -31,6 +32,12 @@ export function SignInForm({ next }: { next?: string }) {
         required
         errors={state.fieldErrors?.password}
       />
+      <Link
+        href="/forgot-password"
+        className="text-primary -mt-1 justify-self-end text-sm font-medium underline-offset-4 hover:underline"
+      >
+        Forgot password?
+      </Link>
       <FormError message={state.error} />
       <Button type="submit" disabled={pending} className="h-10">
         {pending ? "Signing in…" : "Sign in"}

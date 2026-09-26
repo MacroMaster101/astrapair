@@ -8,7 +8,7 @@ export const metadata: Metadata = { title: "Sign in · AstraPair" };
 
 const ERROR_MESSAGES: Record<string, string> = {
   link_invalid:
-    "That link is invalid or has expired. Sign in, or create your account again.",
+    "That link is invalid or has expired. Sign in, or request a new link.",
 };
 
 export default async function LoginPage({ searchParams }: PageProps<"/login">) {

@@ -25,6 +25,18 @@ export const signInSchema = z.object({
   password: z.string().min(1, "Enter your password."),
 });
 
+export const forgotPasswordSchema = z.object({ email: emailSchema });
+
+export const resetPasswordSchema = z
+  .object({
+    password: passwordSchema,
+    confirmPassword: z.string(),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: "Passwords don't match.",
+    path: ["confirmPassword"],
+  });
+
 export const onboardingSchema = z.object({
   ageConfirmed: z.literal(true, "You must confirm you are 18 or older."),
   policiesAccepted: z.literal(

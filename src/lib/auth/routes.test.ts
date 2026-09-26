@@ -8,6 +8,8 @@ describe("getRouteAccess", () => {
     ["/onboarding", "protected"],
     ["/login", "guest-only"],
     ["/signup", "guest-only"],
+    ["/forgot-password", "guest-only"],
+    ["/reset-password", "protected"],
     ["/", "public"],
     ["/legal/privacy", "public"],
     ["/dashboards-are-public", "public"],
