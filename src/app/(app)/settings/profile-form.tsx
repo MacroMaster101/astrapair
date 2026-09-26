@@ -32,7 +32,11 @@ export function ProfileForm({ displayName }: { displayName: string }) {
           {state.message}
         </p>
       )}
-      <Button type="submit" disabled={pending} className="justify-self-start">
+      <Button
+        type="submit"
+        disabled={pending}
+        className="h-10 justify-self-start px-4"
+      >
         {pending ? "Saving…" : "Save"}
       </Button>
     </form>

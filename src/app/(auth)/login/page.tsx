@@ -1,13 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { AuthHeading } from "@/components/auth-heading";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import { SignInForm } from "./sign-in-form";
 
 export const metadata: Metadata = { title: "Sign in · AstraPair" };
@@ -24,28 +18,26 @@ export default async function LoginPage({ searchParams }: PageProps<"/login">) {
     typeof params.error === "string" ? ERROR_MESSAGES[params.error] : undefined;
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Welcome back</CardTitle>
-        <CardDescription>Sign in to your AstraPair account.</CardDescription>
-      </CardHeader>
-      <CardContent className="grid gap-4">
-        {errorMessage && (
-          <Alert variant="destructive">
-            <AlertDescription>{errorMessage}</AlertDescription>
-          </Alert>
-        )}
-        <SignInForm next={next} />
-        <p className="text-muted-foreground text-sm">
-          New to AstraPair?{" "}
-          <Link
-            href="/signup"
-            className="text-foreground underline underline-offset-4"
-          >
-            Create an account
-          </Link>
-        </p>
-      </CardContent>
-    </Card>
+    <div className="grid gap-8">
+      <AuthHeading
+        title="Welcome back"
+        description="Sign in to see your chart and readings."
+      />
+      {errorMessage && (
+        <Alert variant="destructive">
+          <AlertDescription>{errorMessage}</AlertDescription>
+        </Alert>
+      )}
+      <SignInForm next={next} />
+      <p className="text-muted-foreground text-sm">
+        New to AstraPair?{" "}
+        <Link
+          href="/signup"
+          className="text-primary font-medium underline-offset-4 hover:underline"
+        >
+          Create an account
+        </Link>
+      </p>
+    </div>
   );
 }

@@ -2,11 +2,9 @@
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
 
-@custom-variant dark (&:is(.dark *));
+@custom-variant dark (&:where(.dark, .dark *));
 
 @theme inline {
-  --color-brand-navy: var(--brand-navy);
-  --color-brand-blue: var(--brand-blue);
   --color-brand-violet: var(--brand-violet);
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -52,76 +50,82 @@
 }
 
 :root {
-  /* Sampled from public/brand/astrapair-logo.webp */
-  --brand-navy: #010e3b;
-  --brand-blue: #0949eb;
+  /* Electric sapphire, light. Brand blue #0949eb and violet #973ff9 come
+     straight from public/brand/astrapair-logo.webp. */
   --brand-violet: #973ff9;
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: var(--brand-navy);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
+  --star: rgb(9 73 235 / 0.22);
+  --star-accent: rgb(151 63 249 / 0.28);
+  --background: #f5f8ff;
+  --foreground: #0a1840;
+  --card: #ffffff;
+  --card-foreground: #0a1840;
+  --popover: #ffffff;
+  --popover-foreground: #0a1840;
+  --primary: #0949eb;
+  --primary-foreground: #ffffff;
+  --secondary: #e8eefc;
+  --secondary-foreground: #0a1840;
+  --muted: #eaf0fd;
+  --muted-foreground: #51608a;
+  --accent: #e8eefc;
+  --accent-foreground: #0a1840;
   --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
-  --ring: var(--brand-blue);
-  --chart-1: oklch(0.87 0 0);
-  --chart-2: oklch(0.556 0 0);
-  --chart-3: oklch(0.439 0 0);
-  --chart-4: oklch(0.371 0 0);
-  --chart-5: oklch(0.269 0 0);
+  --border: #dbe3f6;
+  --input: #cbd6f0;
+  --ring: #0949eb;
+  --chart-1: #0949eb;
+  --chart-2: #973ff9;
+  --chart-3: #4d7cff;
+  --chart-4: #b680ff;
+  --chart-5: #51608a;
   --radius: 0.625rem;
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: oklch(0.205 0 0);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.97 0 0);
-  --sidebar-accent-foreground: oklch(0.205 0 0);
-  --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: oklch(0.708 0 0);
+  --sidebar: #ffffff;
+  --sidebar-foreground: #0a1840;
+  --sidebar-primary: #0949eb;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #e8eefc;
+  --sidebar-accent-foreground: #0a1840;
+  --sidebar-border: #dbe3f6;
+  --sidebar-ring: #0949eb;
 }
 
 .dark {
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.205 0 0);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.205 0 0);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.922 0 0);
-  --primary-foreground: oklch(0.205 0 0);
-  --secondary: oklch(0.269 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
-  --accent-foreground: oklch(0.985 0 0);
+  /* Electric sapphire, dark. Primary is lifted for contrast; its label is
+     navy because white on #4d7cff falls below WCAG AA. */
+  --brand-violet: #b680ff;
+  --star: rgb(255 255 255 / 0.55);
+  --star-accent: rgb(190 170 255 / 0.6);
+  --background: #020a24;
+  --foreground: #eaf0ff;
+  --card: #0a1a4a;
+  --card-foreground: #eaf0ff;
+  --popover: #0a1a4a;
+  --popover-foreground: #eaf0ff;
+  --primary: #4d7cff;
+  --primary-foreground: #020a24;
+  --secondary: #102258;
+  --secondary-foreground: #eaf0ff;
+  --muted: #0d1d52;
+  --muted-foreground: #9fb0de;
+  --accent: #16286a;
+  --accent-foreground: #eaf0ff;
   --destructive: oklch(0.704 0.191 22.216);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.556 0 0);
-  --chart-1: oklch(0.87 0 0);
-  --chart-2: oklch(0.556 0 0);
-  --chart-3: oklch(0.439 0 0);
-  --chart-4: oklch(0.371 0 0);
-  --chart-5: oklch(0.269 0 0);
-  --sidebar: oklch(0.205 0 0);
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.269 0 0);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.556 0 0);
+  --border: #1c2d66;
+  --input: #26387c;
+  --ring: #4d7cff;
+  --chart-1: #4d7cff;
+  --chart-2: #b680ff;
+  --chart-3: #0949eb;
+  --chart-4: #973ff9;
+  --chart-5: #9fb0de;
+  --sidebar: #0a1a4a;
+  --sidebar-foreground: #eaf0ff;
+  --sidebar-primary: #4d7cff;
+  --sidebar-primary-foreground: #020a24;
+  --sidebar-accent: #16286a;
+  --sidebar-accent-foreground: #eaf0ff;
+  --sidebar-border: #1c2d66;
+  --sidebar-ring: #4d7cff;
 }
 
 @layer base {
@@ -133,5 +137,28 @@
   }
   html {
     @apply font-sans;
+  }
+}
+
+/* Static star field: layered radial dots, tiled at co-prime sizes so the
+   pattern does not visibly repeat. Decorative only. */
+@utility starfield {
+  background-image:
+    radial-gradient(1px 1px at 20px 30px, var(--star), transparent),
+    radial-gradient(1px 1px at 110px 80px, var(--star), transparent),
+    radial-gradient(1.5px 1.5px at 160px 20px, var(--star-accent), transparent),
+    radial-gradient(1px 1px at 60px 140px, var(--star), transparent),
+    radial-gradient(1.5px 1.5px at 230px 170px, var(--star-accent), transparent);
+  background-size:
+    250px 190px,
+    310px 230px,
+    370px 290px,
+    430px 330px,
+    530px 410px;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-behavior: smooth;
   }
 }
