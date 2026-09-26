@@ -1,29 +1,9 @@
 import Image from "next/image";
 import { cn } from "@/lib/utils";
 
-/** Full stacked logo (mark above wordmark), for hero placements. */
-export function Logo({
-  className,
-  priority,
-}: {
-  className?: string;
-  priority?: boolean;
-}) {
-  return (
-    <Image
-      src="/brand/astrapair-logo.webp"
-      alt="AstraPair"
-      width={720}
-      height={565}
-      priority={priority}
-      className={cn("h-auto w-64", className)}
-    />
-  );
-}
-
 /**
- * Horizontal lockup for headers: the mark plus a live-text wordmark, which
- * stays legible at small sizes where the stacked logo's lettering would not.
+ * Horizontal lockup: the mark plus a live-text wordmark. Colours come from
+ * theme tokens, so it reads correctly in light and dark mode.
  */
 export function LogoLockup({ className }: { className?: string }) {
   return (
@@ -36,8 +16,8 @@ export function LogoLockup({ className }: { className?: string }) {
         className="size-8"
       />
       <span className="text-xl font-bold tracking-tight">
-        <span className="text-brand-navy">Astra</span>
-        <span className="from-brand-blue to-brand-violet bg-linear-to-r bg-clip-text text-transparent">
+        <span className="text-foreground">Astra</span>
+        <span className="from-primary to-brand-violet bg-linear-to-r bg-clip-text text-transparent">
           Pair
         </span>
       </span>

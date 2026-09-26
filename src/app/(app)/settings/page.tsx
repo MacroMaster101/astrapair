@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { BackLink } from "@/components/back-link";
 import {
   Card,
   CardContent,
@@ -17,7 +18,10 @@ export default async function SettingsPage() {
 
   return (
     <div className="grid gap-6">
-      <h1 className="text-2xl font-semibold tracking-tight">Settings</h1>
+      <BackLink href="/dashboard" className="w-fit">
+        Back to dashboard
+      </BackLink>
+      <h1 className="text-3xl font-semibold tracking-tight">Settings</h1>
       <Card>
         <CardHeader>
           <CardTitle>Profile</CardTitle>
@@ -36,7 +40,7 @@ export default async function SettingsPage() {
             Read how we use your data in the{" "}
             <Link
               href="/legal/privacy"
-              className="underline underline-offset-4"
+              className="text-primary font-medium underline-offset-4 hover:underline"
             >
               Privacy Policy
             </Link>

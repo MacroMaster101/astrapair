@@ -48,7 +48,7 @@ export function OnboardingForm() {
         }
       />
       <FormError message={state.error} />
-      <Button type="submit" disabled={pending}>
+      <Button type="submit" disabled={pending} className="h-10">
         {pending ? "Saving…" : "Continue"}
       </Button>
     </form>

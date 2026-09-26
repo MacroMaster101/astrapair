@@ -1,6 +1,9 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { BackLink } from "@/components/back-link";
+import { LogoLockup } from "@/components/brand/logo";
+import { ThemeToggle } from "@/components/theme/theme-toggle";
 import { POLICY_VERSION } from "@/lib/legal";
 
 // Placeholder copy. Final documents require privacy/legal review before beta.
@@ -32,6 +35,7 @@ const DOCUMENTS = {
 } as const;
 
 type Slug = keyof typeof DOCUMENTS;
+const SLUGS = Object.keys(DOCUMENTS) as Slug[];
 
 function getDocument(slug: string) {
   return Object.hasOwn(DOCUMENTS, slug) ? DOCUMENTS[slug as Slug] : null;
@@ -53,25 +57,50 @@ export async function generateMetadata({
 export default async function LegalPage({
   params,
 }: PageProps<"/legal/[slug]">) {
-  const doc = getDocument((await params).slug);
+  const { slug } = await params;
+  const doc = getDocument(slug);
   if (!doc) notFound();
 
   return (
-    <main className="mx-auto w-full max-w-2xl flex-1 px-4 py-12">
-      <Link href="/" className="text-muted-foreground text-sm hover:underline">
-        ← AstraPair
-      </Link>
-      <h1 className="mt-4 text-3xl font-semibold tracking-tight">
-        {doc.title}
-      </h1>
-      <p className="text-muted-foreground mt-2 text-sm">
-        Draft · version {POLICY_VERSION} · pending legal review
-      </p>
-      <div className="mt-8 grid gap-4 leading-relaxed">
-        {doc.body.map((paragraph) => (
-          <p key={paragraph}>{paragraph}</p>
-        ))}
-      </div>
-    </main>
+    <div className="flex flex-1 flex-col">
+      <header className="border-b">
+        <div className="mx-auto flex h-16 w-full max-w-3xl items-center justify-between px-4 sm:px-6">
+          <BackLink href="/">Back to home</BackLink>
+          <div className="flex items-center gap-2">
+            <Link href="/" aria-label="AstraPair home">
+              <LogoLockup />
+            </Link>
+            <ThemeToggle />
+          </div>
+        </div>
+      </header>
+      <main className="mx-auto w-full max-w-3xl flex-1 px-4 py-12 sm:px-6 md:py-16">
+        <h1 className="text-3xl font-semibold tracking-tight md:text-4xl">
+          {doc.title}
+        </h1>
+        <p className="text-muted-foreground mt-3 text-sm">
+          Draft version {POLICY_VERSION}, pending legal review.
+        </p>
+        <div className="mt-10 grid max-w-[65ch] gap-5 leading-relaxed">
+          {doc.body.map((paragraph) => (
+            <p key={paragraph}>{paragraph}</p>
+          ))}
+        </div>
+        <nav aria-label="Legal documents" className="mt-16 border-t pt-8">
+          <ul className="flex flex-wrap gap-x-6 gap-y-2 text-sm">
+            {SLUGS.filter((s) => s !== slug).map((other) => (
+              <li key={other}>
+                <Link
+                  href={`/legal/${other}`}
+                  className="text-primary font-medium underline-offset-4 hover:underline"
+                >
+                  {DOCUMENTS[other].title}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </nav>
+      </main>
+    </div>
   );
 }
