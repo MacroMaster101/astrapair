@@ -1,7 +1,7 @@
 import "server-only";
 import { createHash, randomUUID } from "node:crypto";
 import { z } from "zod";
-import { getAiConfig } from "@/lib/ai/config";
+import { configuredModel, getAiConfig } from "@/lib/ai/config";
 import {
   buildRelationshipFacts,
   type EvidenceItem,
@@ -164,14 +164,21 @@ const isGenerating = (row: ReportRow) =>
   Date.now() - Date.parse(row.generation_started_at) < GENERATION_LEASE_MS;
 
 /** The state a row shows, given the current cache key. */
-function stateOfRow(row: ReportRow | null, currentKey: string): ReportState {
+function stateOfRow(
+  row: ReportRow | null,
+  currentKey: string | null,
+): ReportState {
   if (!row) return { kind: "none" };
   if (isGenerating(row)) return { kind: "generating" };
   // A stale generation shows whatever it held before: a ready report or nothing.
   if (row.interpretation_json === null) return { kind: "failed" };
   const report = parseStoredReport(row);
   if (!report) return { kind: "failed" };
-  return { kind: "ready", outOfDate: row.cache_key !== currentKey, report };
+  return {
+    kind: "ready",
+    outOfDate: currentKey !== null && row.cache_key !== currentKey,
+    report,
+  };
 }
 
 /**
@@ -205,8 +212,13 @@ export async function getReportState(): Promise<ReportState> {
     logFailure(context.relationshipId, "read", read.error);
     return { kind: "unavailable" };
   }
-  const model = getAiConfig().ollamaModel;
-  return stateOfRow(read.row, reportCacheKey(context.synastryKey, model));
+  // The model name getAiProvider() reports. With no model (AI disabled, or OpenAI
+  // not set up) the stored report is not marked out of date: nothing changed.
+  const model = configuredModel(getAiConfig());
+  return stateOfRow(
+    read.row,
+    model === null ? null : reportCacheKey(context.synastryKey, model),
+  );
 }
 
 /**
@@ -283,7 +295,7 @@ async function interpret(
         logFailure(
           context.relationshipId,
           `validate-${attempt}`,
-          "unparseable",
+          e.code ?? "unparseable",
         );
         fix = { retry: true, policy: false };
         continue;

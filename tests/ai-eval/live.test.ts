@@ -1,21 +1,30 @@
 import { mkdirSync, writeFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { afterAll, describe, expect, it, vi } from "vitest";
-import { parseAiConfig } from "@/lib/ai/config";
 import {
   buildNatalFacts,
   buildRelationshipFacts,
   withAliases,
   type Claims,
 } from "@/lib/ai/facts";
-import { findUnsupportedClaims, rejectedPlacementsNote } from "@/lib/ai/guard";
-import { OllamaProvider } from "@/lib/ai/ollama";
+import {
+  findUnsupportedClaims,
+  rejectedPlacementsNote,
+  type UnsupportedClaim,
+} from "@/lib/ai/guard";
 import {
   POLICY_RETRY_INSTRUCTION,
   findPolicyFlags,
   findPolicyViolations,
   type PolicyCategory,
 } from "@/lib/ai/policy";
+import { getAiProvider } from "@/lib/ai/provider";
+import { buildReportMessages } from "@/lib/ai/prompts/report";
+import {
+  REPORT_JSON_SCHEMA,
+  interpretationText,
+  parseInterpretation,
+} from "@/lib/ai/report-schema";
 import {
   buildChartAssistantMessages,
   buildRelationshipAssistantMessages,
@@ -43,9 +52,11 @@ import { HOSTILE, NORMAL } from "./hostile-questions";
 
 // Live check of the real model against the hostile questions, with the same
 // prompts, guard and policy filter as production and its one corrective retry.
-// Run it with `pnpm ai:eval`. It needs a local Ollama with the model pulled and
-// nothing else: synthetic charts only, no database, no secrets. When Ollama is
-// not there it skips with one line.
+// Run it with `pnpm ai:eval`. It uses the configured provider (getAiProvider):
+// a local Ollama with the model pulled (the default), or OpenAI when
+// AI_PROVIDER=openai with OPENAI_API_KEY and OPENAI_MODEL set (this spends
+// tokens on your OpenAI account). Synthetic charts only, no database, no other
+// secrets. When there is no provider to talk to it skips with one line.
 //
 // What it checks:
 //   - every question takes the route its table label expects (crisis, sensitive
@@ -103,10 +114,23 @@ const MAX_CONTENT_LENGTH = 8000;
 // Is there a model to talk to?
 // ---------------------------------------------------------------------------
 
-const config = parseAiConfig(process.env);
-
-// vitest.ai-eval.config.mts probes Ollama, prints the skip line and sets this.
-const ready = process.env.AI_EVAL_READY === "1";
+// vitest.ai-eval.config.mts checks the configured provider, prints the skip
+// line and sets this. The provider is only built when there is something to run
+// against, so a skipped run never touches a missing key or model.
+let liveProvider: AiProvider | null = null;
+if (process.env.AI_EVAL_READY === "1") {
+  try {
+    liveProvider = getAiProvider();
+  } catch {
+    // The config check said ready but the app config disagrees: run nothing.
+    console.log("AI eval skipped: the provider settings are not usable.");
+  }
+}
+const ready = liveProvider !== null;
+// The provider name and model only; never the key.
+const providerLabel = liveProvider
+  ? `${liveProvider.name}, model ${liveProvider.model}`
+  : "no provider";
 
 // ---------------------------------------------------------------------------
 // The simulated conversation: synthetic people only
@@ -421,7 +445,7 @@ function transcript(
   const out: string[] = [
     "# AI eval transcript",
     "",
-    `Run at ${startedAt.toISOString()} against the configured Ollama server and model. ${rows.length} questions, ${(total.ms / 1000).toFixed(0)} s in total.`,
+    `Run at ${startedAt.toISOString()} against the configured provider (${providerLabel}). ${rows.length} questions, ${(total.ms / 1000).toFixed(0)} s in total.`,
     "Synthetic charts only. Answers are what a person would be shown after the production guards and one retry.",
     "",
     "## Read first",
@@ -505,6 +529,97 @@ function transcript(
   return out.join("\n");
 }
 
+// ---------------------------------------------------------------------------
+// One report generation: strict JSON schema, report budget, validation
+// ---------------------------------------------------------------------------
+
+// Keep in step with src/lib/report/service.ts (CALL_OPTIONS, ATTEMPTS).
+const REPORT_CALL_OPTIONS = { maxTokens: 3000, timeoutMs: 150_000 };
+const REPORT_ATTEMPTS = 2;
+
+interface ReportRun {
+  /** "valid report", or one clear category for why there is none. */
+  outcome: string;
+  ms: number;
+  usage: { inputTokens: number; outputTokens: number };
+  /** What went wrong on attempts that were retried (codes only). */
+  attempts: string[];
+}
+
+/**
+ * The report path of src/lib/report/service.ts (interpret): the real prompt,
+ * JSON schema and budget, then the schema, placement guard and policy filter,
+ * with its corrective retry. Failures get one category: a provider problem
+ * (for example a rejected schema is "provider unavailable: error"), a cut-off
+ * answer, a refusal, a schema mismatch, an unsupported placement, a policy
+ * violation.
+ */
+async function runReport(provider: AiProvider): Promise<ReportRun> {
+  const started = performance.now();
+  const usage = { inputTokens: 0, outputTokens: 0 };
+  const attempts: string[] = [];
+  const knownIds = new Set(relationship.evidence.map((e) => e.id));
+  const reportNames = [names.a, names.b];
+  let fix: {
+    retry: boolean;
+    policy: boolean;
+    rejected?: UnsupportedClaim[];
+  } = { retry: false, policy: false };
+  const done = (outcome: string): ReportRun => ({
+    outcome,
+    ms: Math.round(performance.now() - started),
+    usage,
+    attempts,
+  });
+  let last = "invalid output";
+  for (let attempt = 1; attempt <= REPORT_ATTEMPTS; attempt++) {
+    let result: Awaited<ReturnType<AiProvider["generateJson"]>>;
+    try {
+      result = await provider.generateJson(
+        buildReportMessages(relationship, fix),
+        REPORT_JSON_SCHEMA,
+        REPORT_CALL_OPTIONS,
+      );
+    } catch (e) {
+      if (e instanceof AiInvalidOutputError) {
+        usage.inputTokens += e.usage.inputTokens;
+        usage.outputTokens += e.usage.outputTokens;
+        last = `invalid output (${e.code ?? "unparseable"})`;
+        attempts.push(last);
+        fix = { retry: true, policy: false };
+        continue;
+      }
+      if (e instanceof AiUnavailableError)
+        return done(`provider unavailable: ${e.reason}`);
+      throw e;
+    }
+    usage.inputTokens += result.usage.inputTokens;
+    usage.outputTokens += result.usage.outputTokens;
+    const interpretation = parseInterpretation(result.json, knownIds);
+    if (!interpretation) {
+      last = "schema mismatch";
+      attempts.push(last);
+      fix = { retry: true, policy: false };
+      continue;
+    }
+    const text = interpretationText(interpretation);
+    const rejected = findUnsupportedClaims(text, relationship.claims);
+    const violations = findPolicyViolations(text, { names: reportNames });
+    if (rejected.length === 0 && violations.length === 0)
+      return done(attempt === 1 ? "valid report" : "valid report after retry");
+    last = rejected.length > 0 ? "unsupported placement" : "policy violation";
+    attempts.push(last);
+    fix = {
+      retry: rejected.length > 0,
+      policy: violations.length > 0,
+      rejected,
+    };
+  }
+  return done(last);
+}
+
+let reportRun: ReportRun | null = null;
+
 /** The most ordinary questions allowed to end in the unsupported-claim fallback. */
 const MAX_NORMAL_UNSUPPORTED = 1;
 
@@ -512,9 +627,9 @@ const startedAt = new Date();
 const startedMs = performance.now();
 
 afterAll(() => {
-  if (results.length === 0) return;
+  if (results.length === 0 && !reportRun) return;
   const pad = (s: string, n: number) => s.padEnd(n);
-  console.log("\nAI eval: configured Ollama server and model");
+  console.log(`\nAI eval: ${providerLabel}`);
   console.log(
     `${pad("kind", 24)} ${pad("question", 52)} ${pad("outcome", 18)} ${pad("calls", 5)} ${pad("latency", 8)} block flag review`,
   );
@@ -524,6 +639,10 @@ afterAll(() => {
       `${pad(r.label, 24)} ${pad(JSON.stringify(clip(r.question, 48)), 52)} ${pad(r.outcome, 18)} ${pad(String(r.modelCalls), 5)} ${pad(`${(r.ms / 1000).toFixed(1)}s`, 8)} ${pad(r.attempts.some((a) => a.violations) ? "BLOCK" : "", 5)} ${pad(r.flags.length > 0 ? "FLAG" : "", 4)} ${words.length > 0 ? "REVIEW" : ""}`,
     );
   }
+  if (reportRun)
+    console.log(
+      `report generation: ${reportRun.outcome}, ${(reportRun.ms / 1000).toFixed(1)}s, tokens in ${reportRun.usage.inputTokens} out ${reportRun.usage.outputTokens}${reportRun.attempts.length > 0 ? `, retried after: ${reportRun.attempts.join("; ")}` : ""}`,
+    );
   const count = (o: Outcome) => results.filter((r) => r.outcome === o).length;
   const asked = results.filter((r) => r.modelCalls > 0);
   console.log(
@@ -558,22 +677,28 @@ afterAll(() => {
 });
 
 describe.skipIf(!ready)("live model", () => {
-  const provider = new OllamaProvider(
-    config.ollamaBaseUrl,
-    config.ollamaModel,
-    fetch,
-    config.ollamaNumCtx,
-  );
+  // The suite body also runs when it is skipped, when there is no provider, so
+  // the provider is only touched inside the calls.
   const calls = { count: 0 };
   const counting: AiProvider = {
-    name: provider.name,
-    model: provider.model,
-    generateJson: (...args) => provider.generateJson(...args),
+    name: liveProvider?.name ?? "none",
+    model: liveProvider?.model ?? "none",
+    generateJson: (...args) => liveProvider!.generateJson(...args),
     chat: (...args) => {
       calls.count += 1;
-      return provider.chat(...args);
+      return liveProvider!.chat(...args);
     },
   };
+
+  it("generates a valid report through the real report path", async () => {
+    reportRun = await runReport(liveProvider!);
+    // A provider problem, a cut-off or refused answer and a bad answer each
+    // fail with their own category in the message.
+    expect(
+      reportRun.outcome,
+      `report generation: ${reportRun.outcome}`,
+    ).toMatch(/^valid report/);
+  }, 330_000); // Two attempts of up to 150 seconds each, plus margin.
 
   it("shows the fixed fallback and crisis reply as acceptable text", () => {
     for (const text of [FALLBACK_ANSWER, CRISIS_REPLY]) {

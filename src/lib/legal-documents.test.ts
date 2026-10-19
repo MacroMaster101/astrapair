@@ -172,6 +172,75 @@ describe("LEGAL_DOCUMENTS", () => {
     );
   });
 
+  it("says what is sent to OpenAI when the hosted AI is used, and keeps the local wording", () => {
+    const text = allText("privacy");
+    const section = LEGAL_DOCUMENTS.privacy.sections.find(
+      (s) => s.heading === "How your chart and AI features work",
+    )!;
+    const hosted = section.paragraphs.filter((p) =>
+      p.startsWith("When the hosted AI is used"),
+    );
+    expect(hosted).toHaveLength(1);
+    // Exactly what is sent, item by item.
+    for (const sent of [
+      "your question",
+      "the earlier messages of that conversation",
+      "the display names shown in the app",
+      "the signs and degrees of your planets",
+      "the houses",
+      "your Ascendant and Midheaven",
+      "the aspects between them with their orbs",
+      "whether your birth time is known, unknown or approximate",
+      "whether a planet is retrograde",
+      "only their signs and how the two charts connect, and a note when their birth time is unknown",
+      "short summaries of your compatibility report",
+      "For a compatibility report, we send the display names of both of you",
+      "the signs of each person's planets and Ascendant",
+      "the aspects with their orbs and where one person's planets fall in the other's houses",
+      "a note when someone's birth time is unknown",
+      "there is no question and no earlier conversation",
+    ])
+      expect(hosted[0], sent).toContain(sent);
+    expect(hosted[0]).toContain(
+      "OpenAI, a provider based in the United States",
+    );
+    expect(hosted[0]).toContain("to write the answer");
+    // What is not sent stays stated, and the degrees are not passed off as harmless.
+    expect(text).toContain(
+      "We do not send your birth date, birth time, birthplace, coordinates or timezone to the model.",
+    );
+    expect(text).toContain(
+      "From the degrees of your planets, someone with astrology software could work out roughly when you were born.",
+    );
+    expect(text).not.toContain("Degrees can reveal");
+    // Storage and training are stated as OpenAI's terms, not as our promise.
+    const terms = section.paragraphs.filter((p) =>
+      p.includes("OpenAI's API terms"),
+    );
+    expect(terms).toHaveLength(1);
+    expect(terms[0]).toContain(
+      "We ask OpenAI not to save our requests in its stored history.",
+    );
+    expect(terms[0]).not.toContain("storage turned off");
+    expect(terms[0]).toContain("According to OpenAI's API terms");
+    expect(terms[0]).toContain("not used to train");
+    expect(terms[0]).toContain("for a limited period");
+    // The existing wording for a model we run ourselves is kept.
+    expect(text).toContain(
+      "The model is run by us or by an AI provider we choose.",
+    );
+  });
+
+  it("names OpenAI as an AI processor and a possible overseas recipient", () => {
+    const text = allText("privacy");
+    expect(text).toContain(
+      "AI provider: the language model that writes AI answers and reports, run by us or by an AI provider we choose. When the hosted AI is used, that provider is OpenAI, based in the United States.",
+    );
+    expect(text).toContain(
+      "Place search, Google sign-in, error reporting and the AI provider may also handle data in other countries. OpenAI, the hosted AI provider, is based in the United States.",
+    );
+  });
+
   it("says what Google shares and which cookie lasts how long", () => {
     const text = allText("privacy");
     expect(text).toContain(
@@ -247,7 +316,7 @@ describe("ASTROLOGY_DISCLAIMER", () => {
 
 describe("POLICY_VERSION", () => {
   it("is the date of this version", () => {
-    expect(POLICY_VERSION).toBe("2026-10-11");
+    expect(POLICY_VERSION).toBe("2026-10-19");
   });
 });
 

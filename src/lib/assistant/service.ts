@@ -451,7 +451,11 @@ async function generate(
           usage: e.usage,
           attempt,
         });
-        logFailure(ids.threadId, `validate-${attempt}`, "invalid_output");
+        logFailure(
+          ids.threadId,
+          `validate-${attempt}`,
+          e.code ?? "invalid_output",
+        );
         continue;
       }
       const unavailable = e instanceof AiUnavailableError;
