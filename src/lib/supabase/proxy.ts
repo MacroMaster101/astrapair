@@ -5,6 +5,7 @@ import { getPublicEnv } from "@/lib/env";
 import {
   AFTER_SIGN_IN_PATH,
   getRouteAccess,
+  safeNextPath,
   SIGN_IN_PATH,
 } from "@/lib/auth/routes";
 
@@ -41,8 +42,18 @@ export async function updateSession(request: NextRequest) {
   );
 
   // Do not run code between createServerClient and getClaims().
-  const { data } = await supabase.auth.getClaims();
-  const isSignedIn = Boolean(data?.claims?.sub);
+  // supabase-js returns network failures as `{ data: null, error }`, which
+  // reads as signed out below. If it throws instead, do the same rather than
+  // turning an auth outage into a 500 on every page.
+  let isSignedIn = false;
+  try {
+    const { data } = await supabase.auth.getClaims();
+    isSignedIn = Boolean(data?.claims?.sub);
+  } catch (error) {
+    console.error("Session check failed", {
+      name: error instanceof Error ? error.name : "unknown",
+    });
+  }
   const { pathname, search } = request.nextUrl;
   const access = getRouteAccess(pathname);
 
@@ -54,10 +65,17 @@ export async function updateSession(request: NextRequest) {
   }
 
   if (access === "guest-only" && isSignedIn) {
-    const url = request.nextUrl.clone();
-    url.pathname = AFTER_SIGN_IN_PATH;
-    url.search = "";
-    return redirectWithSession(url, response);
+    // A signed-in visitor on /login or /signup carries on to where they were going.
+    const requested = new URL(
+      safeNextPath(request.nextUrl.searchParams.get("next")),
+      request.nextUrl,
+    );
+    // URL parsing strips tabs and newlines, so re-check the origin.
+    const target =
+      requested.origin === request.nextUrl.origin
+        ? requested
+        : new URL(AFTER_SIGN_IN_PATH, request.nextUrl);
+    return redirectWithSession(target, response);
   }
 
   return response;

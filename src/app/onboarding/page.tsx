@@ -5,11 +5,17 @@ import {
   Sparkles,
 } from "lucide-react";
 import type { Metadata } from "next";
+import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { LogoLockup } from "@/components/brand/logo";
 import { ThemeToggle } from "@/components/theme/theme-toggle";
 import { Button } from "@/components/ui/button";
+import { safeNextPath } from "@/lib/auth/routes";
 import { getProfile } from "@/lib/auth/session";
+import {
+  INVITE_NEXT_COOKIE,
+  resolveOnboardingNext,
+} from "@/lib/partner/next-path";
 import { OnboardingForm } from "./onboarding-form";
 
 export const metadata: Metadata = { title: "Welcome · AstraPair" };
@@ -25,7 +31,7 @@ const POINTS = [
   },
   {
     icon: ShieldCheck,
-    text: "Your birth details calculate your chart. They are shared with a partner only after you both agree to connect.",
+    text: "Your birth details calculate your chart and stay private. If you connect with a partner, they see only your signs and your compatibility facts.",
   },
   {
     icon: MessagesSquare,
@@ -33,9 +39,19 @@ const POINTS = [
   },
 ];
 
-export default async function OnboardingPage() {
+export default async function OnboardingPage({
+  searchParams,
+}: PageProps<"/onboarding">) {
+  const params = await searchParams;
+  const queryNext = typeof params.next === "string" ? params.next : undefined;
+
   const profile = await getProfile();
-  if (profile.onboarded_at) redirect("/dashboard");
+  if (profile.onboarded_at) redirect(safeNextPath(queryNext, "/dashboard"));
+
+  const next = resolveOnboardingNext(
+    queryNext,
+    (await cookies()).get(INVITE_NEXT_COOKIE)?.value,
+  );
 
   return (
     <div className="flex flex-1 flex-col">
@@ -74,7 +90,7 @@ export default async function OnboardingPage() {
               </li>
             ))}
           </ul>
-          <OnboardingForm />
+          <OnboardingForm next={next ?? undefined} />
         </div>
       </main>
     </div>

@@ -10,10 +10,160 @@ export type Database = {
   // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
-    PostgrestVersion: "14.5";
+    PostgrestVersion: "14.17";
   };
   public: {
     Tables: {
+      ai_messages: {
+        Row: {
+          content: string;
+          created_at: string;
+          id: string;
+          input_tokens: number | null;
+          model: string | null;
+          output_tokens: number | null;
+          prompt_version: string | null;
+          role: string;
+          thread_id: string;
+        };
+        Insert: {
+          content: string;
+          created_at?: string;
+          id?: string;
+          input_tokens?: number | null;
+          model?: string | null;
+          output_tokens?: number | null;
+          prompt_version?: string | null;
+          role: string;
+          thread_id: string;
+        };
+        Update: {
+          content?: string;
+          created_at?: string;
+          id?: string;
+          input_tokens?: number | null;
+          model?: string | null;
+          output_tokens?: number | null;
+          prompt_version?: string | null;
+          role?: string;
+          thread_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "ai_messages_thread_id_fkey";
+            columns: ["thread_id"];
+            isOneToOne: false;
+            referencedRelation: "ai_threads";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      ai_threads: {
+        Row: {
+          created_at: string;
+          id: string;
+          owner_user_id: string;
+          relationship_id: string | null;
+          thread_type: string;
+          title: string;
+          updated_at: string;
+        };
+        Insert: {
+          created_at?: string;
+          id?: string;
+          owner_user_id: string;
+          relationship_id?: string | null;
+          thread_type: string;
+          title: string;
+          updated_at?: string;
+        };
+        Update: {
+          created_at?: string;
+          id?: string;
+          owner_user_id?: string;
+          relationship_id?: string | null;
+          thread_type?: string;
+          title?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "ai_threads_relationship_id_fkey";
+            columns: ["relationship_id"];
+            isOneToOne: false;
+            referencedRelation: "relationships";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      ai_usage_events: {
+        Row: {
+          attempt: number;
+          created_at: string;
+          id: number;
+          input_tokens: number;
+          kind: string;
+          model: string;
+          output_tokens: number;
+          prompt_version: string;
+          relationship_id: string | null;
+          user_id: string;
+        };
+        Insert: {
+          attempt?: number;
+          created_at?: string;
+          id?: never;
+          input_tokens?: number;
+          kind: string;
+          model: string;
+          output_tokens?: number;
+          prompt_version: string;
+          relationship_id?: string | null;
+          user_id: string;
+        };
+        Update: {
+          attempt?: number;
+          created_at?: string;
+          id?: never;
+          input_tokens?: number;
+          kind?: string;
+          model?: string;
+          output_tokens?: number;
+          prompt_version?: string;
+          relationship_id?: string | null;
+          user_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "ai_usage_events_relationship_id_fkey";
+            columns: ["relationship_id"];
+            isOneToOne: false;
+            referencedRelation: "relationships";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      analytics_events: {
+        Row: {
+          created_at: string;
+          event: string;
+          id: number;
+          user_ref: string;
+        };
+        Insert: {
+          created_at?: string;
+          event: string;
+          id?: never;
+          user_ref: string;
+        };
+        Update: {
+          created_at?: string;
+          event?: string;
+          id?: never;
+          user_ref?: string;
+        };
+        Relationships: [];
+      };
       audit_events: {
         Row: {
           actor_user_id: string | null;
@@ -44,12 +194,185 @@ export type Database = {
         };
         Relationships: [];
       };
+      beta_invite_codes: {
+        Row: {
+          code_hash: string;
+          created_at: string;
+          disabled_at: string | null;
+          label: string;
+          max_uses: number;
+          uses: number;
+        };
+        Insert: {
+          code_hash: string;
+          created_at?: string;
+          disabled_at?: string | null;
+          label: string;
+          max_uses?: number;
+          uses?: number;
+        };
+        Update: {
+          code_hash?: string;
+          created_at?: string;
+          disabled_at?: string | null;
+          label?: string;
+          max_uses?: number;
+          uses?: number;
+        };
+        Relationships: [];
+      };
+      birth_profiles: {
+        Row: {
+          birth_date: string;
+          birth_place_label: string;
+          birth_time: string | null;
+          birth_time_accuracy: string;
+          created_at: string;
+          display_name: string | null;
+          id: string;
+          latitude: number;
+          longitude: number;
+          owner_user_id: string;
+          timezone_id: string;
+          updated_at: string;
+        };
+        Insert: {
+          birth_date: string;
+          birth_place_label: string;
+          birth_time?: string | null;
+          birth_time_accuracy: string;
+          created_at?: string;
+          display_name?: string | null;
+          id?: string;
+          latitude: number;
+          longitude: number;
+          owner_user_id: string;
+          timezone_id: string;
+          updated_at?: string;
+        };
+        Update: {
+          birth_date?: string;
+          birth_place_label?: string;
+          birth_time?: string | null;
+          birth_time_accuracy?: string;
+          created_at?: string;
+          display_name?: string | null;
+          id?: string;
+          latitude?: number;
+          longitude?: number;
+          owner_user_id?: string;
+          timezone_id?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
+      charts: {
+        Row: {
+          birth_profile_id: string;
+          calculation_provider: string;
+          calculation_version: string;
+          chart_json: Json;
+          created_at: string;
+          house_system: string | null;
+          id: string;
+          input_hash: string;
+          zodiac_system: string;
+        };
+        Insert: {
+          birth_profile_id: string;
+          calculation_provider: string;
+          calculation_version: string;
+          chart_json: Json;
+          created_at?: string;
+          house_system?: string | null;
+          id?: string;
+          input_hash: string;
+          zodiac_system?: string;
+        };
+        Update: {
+          birth_profile_id?: string;
+          calculation_provider?: string;
+          calculation_version?: string;
+          chart_json?: Json;
+          created_at?: string;
+          house_system?: string | null;
+          id?: string;
+          input_hash?: string;
+          zodiac_system?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "charts_birth_profile_id_fkey";
+            columns: ["birth_profile_id"];
+            isOneToOne: false;
+            referencedRelation: "birth_profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      compatibility_reports: {
+        Row: {
+          cache_key: string | null;
+          claim_id: string | null;
+          completed_at: string | null;
+          facts_json: Json | null;
+          generated_by: string | null;
+          generation_started_at: string | null;
+          interpretation_json: Json | null;
+          model: string | null;
+          pending_cache_key: string | null;
+          prompt_version: string | null;
+          relationship_id: string;
+          status: string;
+          synastry_input_hash: string | null;
+        };
+        Insert: {
+          cache_key?: string | null;
+          claim_id?: string | null;
+          completed_at?: string | null;
+          facts_json?: Json | null;
+          generated_by?: string | null;
+          generation_started_at?: string | null;
+          interpretation_json?: Json | null;
+          model?: string | null;
+          pending_cache_key?: string | null;
+          prompt_version?: string | null;
+          relationship_id: string;
+          status: string;
+          synastry_input_hash?: string | null;
+        };
+        Update: {
+          cache_key?: string | null;
+          claim_id?: string | null;
+          completed_at?: string | null;
+          facts_json?: Json | null;
+          generated_by?: string | null;
+          generation_started_at?: string | null;
+          interpretation_json?: Json | null;
+          model?: string | null;
+          pending_cache_key?: string | null;
+          prompt_version?: string | null;
+          relationship_id?: string;
+          status?: string;
+          synastry_input_hash?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "compatibility_reports_relationship_id_fkey";
+            columns: ["relationship_id"];
+            isOneToOne: true;
+            referencedRelation: "relationships";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       consents: {
         Row: {
           accepted_at: string;
           consent_type: string;
           id: string;
           policy_version: string;
+          relationship_id: string | null;
           revoked_at: string | null;
           user_id: string;
         };
@@ -58,6 +381,7 @@ export type Database = {
           consent_type: string;
           id?: string;
           policy_version: string;
+          relationship_id?: string | null;
           revoked_at?: string | null;
           user_id: string;
         };
@@ -66,10 +390,19 @@ export type Database = {
           consent_type?: string;
           id?: string;
           policy_version?: string;
+          relationship_id?: string | null;
           revoked_at?: string | null;
           user_id?: string;
         };
-        Relationships: [];
+        Relationships: [
+          {
+            foreignKeyName: "consents_relationship_id_fkey";
+            columns: ["relationship_id"];
+            isOneToOne: false;
+            referencedRelation: "relationships";
+            referencedColumns: ["id"];
+          },
+        ];
       };
       profiles: {
         Row: {
@@ -98,15 +431,210 @@ export type Database = {
         };
         Relationships: [];
       };
+      relationship_invites: {
+        Row: {
+          created_at: string;
+          expires_at: string;
+          id: string;
+          inviter_policy_version: string;
+          inviter_user_id: string;
+          responded_at: string | null;
+          responded_by: string | null;
+          status: string;
+          token_hash: string;
+        };
+        Insert: {
+          created_at?: string;
+          expires_at: string;
+          id?: string;
+          inviter_policy_version: string;
+          inviter_user_id: string;
+          responded_at?: string | null;
+          responded_by?: string | null;
+          status?: string;
+          token_hash: string;
+        };
+        Update: {
+          created_at?: string;
+          expires_at?: string;
+          id?: string;
+          inviter_policy_version?: string;
+          inviter_user_id?: string;
+          responded_at?: string | null;
+          responded_by?: string | null;
+          status?: string;
+          token_hash?: string;
+        };
+        Relationships: [];
+      };
+      relationship_members: {
+        Row: {
+          joined_at: string;
+          left_at: string | null;
+          relationship_id: string;
+          user_id: string;
+        };
+        Insert: {
+          joined_at?: string;
+          left_at?: string | null;
+          relationship_id: string;
+          user_id: string;
+        };
+        Update: {
+          joined_at?: string;
+          left_at?: string | null;
+          relationship_id?: string;
+          user_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "relationship_members_relationship_id_fkey";
+            columns: ["relationship_id"];
+            isOneToOne: false;
+            referencedRelation: "relationships";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      relationships: {
+        Row: {
+          created_at: string;
+          created_by: string | null;
+          ended_at: string | null;
+          ended_by: string | null;
+          id: string;
+          status: string;
+        };
+        Insert: {
+          created_at?: string;
+          created_by?: string | null;
+          ended_at?: string | null;
+          ended_by?: string | null;
+          id?: string;
+          status?: string;
+        };
+        Update: {
+          created_at?: string;
+          created_by?: string | null;
+          ended_at?: string | null;
+          ended_by?: string | null;
+          id?: string;
+          status?: string;
+        };
+        Relationships: [];
+      };
+      synastry: {
+        Row: {
+          calculation_version: string;
+          created_at: string;
+          facts_json: Json;
+          input_hash: string;
+          relationship_id: string;
+        };
+        Insert: {
+          calculation_version: string;
+          created_at?: string;
+          facts_json: Json;
+          input_hash: string;
+          relationship_id: string;
+        };
+        Update: {
+          calculation_version?: string;
+          created_at?: string;
+          facts_json?: Json;
+          input_hash?: string;
+          relationship_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "synastry_relationship_id_fkey";
+            columns: ["relationship_id"];
+            isOneToOne: true;
+            referencedRelation: "relationships";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
     };
     Views: {
       [_ in never]: never;
     };
     Functions: {
+      accept_invite: {
+        Args: { p_policy_version: string; p_token_hash: string };
+        Returns: string;
+      };
+      check_beta_code: { Args: { p_code: string }; Returns: boolean };
+      claim_report_generation: {
+        Args: {
+          p_claim_id: string;
+          p_pending_cache_key: string;
+          p_relationship_id: string;
+        };
+        Returns: boolean;
+      };
       complete_onboarding: {
         Args: { p_policy_version: string };
         Returns: undefined;
       };
+      create_invite: {
+        Args: { p_policy_version: string; p_token_hash: string };
+        Returns: string;
+      };
+      decline_invite: { Args: { p_token_hash: string }; Returns: undefined };
+      delete_relationship_derived_data: {
+        Args: { p_relationship_id: string };
+        Returns: undefined;
+      };
+      end_relationship: {
+        Args: { p_relationship_id: string };
+        Returns: undefined;
+      };
+      finish_report_generation: {
+        Args: {
+          p_claim_id: string;
+          p_relationship_id: string;
+          p_report: Json;
+          p_success: boolean;
+        };
+        Returns: boolean;
+      };
+      get_invite_preview: {
+        Args: { p_token_hash: string };
+        Returns: {
+          inviter_name: string;
+          is_own: boolean;
+          state: string;
+        }[];
+      };
+      get_my_pending_invite: {
+        Args: never;
+        Returns: {
+          created_at: string;
+          expires_at: string;
+        }[];
+      };
+      get_my_relationship: {
+        Args: never;
+        Returns: {
+          connected_at: string;
+          partner_display_name: string;
+          partner_user_id: string;
+          relationship_id: string;
+        }[];
+      };
+      hook_before_user_created: { Args: { event: Json }; Returns: Json };
+      is_active_member: {
+        Args: { p_relationship_id: string };
+        Returns: boolean;
+      };
+      is_member: { Args: { p_relationship_id: string }; Returns: boolean };
+      purge_old_audit_events: {
+        Args: { p_older_than: string };
+        Returns: number;
+      };
+      revoke_invite: { Args: never; Returns: undefined };
+      rls_audit: { Args: never; Returns: string[] };
     };
     Enums: {
       [_ in never]: never;

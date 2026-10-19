@@ -5,44 +5,20 @@ import { BackLink } from "@/components/back-link";
 import { LogoLockup } from "@/components/brand/logo";
 import { ThemeToggle } from "@/components/theme/theme-toggle";
 import { POLICY_VERSION } from "@/lib/legal";
+import {
+  CONTACT_FALLBACK,
+  CONTACT_LEAD,
+  LEGAL_DOCUMENTS,
+  LEGAL_SLUGS,
+  getLegalDocument,
+  parseContactEmail,
+} from "@/lib/legal-documents";
 
-// Placeholder copy. Final documents require privacy/legal review before beta.
-const DOCUMENTS = {
-  terms: {
-    title: "Terms of Service",
-    body: [
-      "AstraPair is available only to people aged 18 or older.",
-      "Astrology content is provided for entertainment and self-reflection. It is not a scientific prediction and must not be relied on for medical, mental-health, legal, financial, or relationship decisions.",
-      "You are responsible for the accuracy of the birth details you enter and for only connecting with a partner who has agreed to connect with you.",
-    ],
-  },
-  privacy: {
-    title: "Privacy Policy",
-    body: [
-      "We collect your account details and the birth details you provide (date, time accuracy, and place) to calculate your natal chart.",
-      "Your chart is shared with a partner only after you both explicitly accept a connection. You can disconnect at any time.",
-      "When you use the AI assistant, the relevant chart data and your question are sent to our AI provider to generate a response.",
-      "You can request deletion of your account and personal data from your settings.",
-    ],
-  },
-  disclaimer: {
-    title: "Astrology & AI Disclaimer",
-    body: [
-      "AstraPair uses traditional Western astrology. Readings describe traditional associations, not facts about you or your relationship.",
-      "AI-generated responses may be incomplete or wrong, and they never replace professional advice.",
-    ],
-  },
-} as const;
-
-type Slug = keyof typeof DOCUMENTS;
-const SLUGS = Object.keys(DOCUMENTS) as Slug[];
-
-function getDocument(slug: string) {
-  return Object.hasOwn(DOCUMENTS, slug) ? DOCUMENTS[slug as Slug] : null;
-}
+// The copy lives in src/lib/legal-documents.ts. It is a draft: the documents
+// need review by a lawyer before launch.
 
 export function generateStaticParams() {
-  return Object.keys(DOCUMENTS).map((slug) => ({ slug }));
+  return LEGAL_SLUGS.map((slug) => ({ slug }));
 }
 
 export const dynamicParams = false;
@@ -50,16 +26,39 @@ export const dynamicParams = false;
 export async function generateMetadata({
   params,
 }: PageProps<"/legal/[slug]">): Promise<Metadata> {
-  const doc = getDocument((await params).slug);
+  const doc = getLegalDocument((await params).slug);
   return { title: doc ? `${doc.title} · AstraPair` : "AstraPair" };
+}
+
+function ContactLine({ email }: { email: string | null }) {
+  if (!email) return <p>{CONTACT_FALLBACK}</p>;
+  return (
+    <p>
+      {CONTACT_LEAD}{" "}
+      <a
+        href={`mailto:${email}`}
+        className="text-primary font-medium underline-offset-4 hover:underline"
+      >
+        {email}
+      </a>
+      .
+    </p>
+  );
 }
 
 export default async function LegalPage({
   params,
 }: PageProps<"/legal/[slug]">) {
   const { slug } = await params;
-  const doc = getDocument(slug);
+  const doc = getLegalDocument(slug);
   if (!doc) notFound();
+  // Set to exactly "true" once a lawyer has reviewed these documents; until
+  // then the page says it is a draft. The literal names let Next.js inline the
+  // values when the page is built.
+  const reviewed = process.env.NEXT_PUBLIC_LEGAL_REVIEWED === "true";
+  const contactEmail = parseContactEmail(
+    process.env.NEXT_PUBLIC_PRIVACY_CONTACT_EMAIL,
+  );
 
   return (
     <div className="flex flex-1 flex-col">
@@ -79,22 +78,32 @@ export default async function LegalPage({
           {doc.title}
         </h1>
         <p className="text-muted-foreground mt-3 text-sm">
-          Draft version {POLICY_VERSION}, pending legal review.
+          {reviewed
+            ? `Version ${POLICY_VERSION}`
+            : `Draft version ${POLICY_VERSION}, pending legal review.`}
         </p>
-        <div className="mt-10 grid max-w-[65ch] gap-5 leading-relaxed">
-          {doc.body.map((paragraph) => (
-            <p key={paragraph}>{paragraph}</p>
+        <div className="mt-10 grid max-w-[65ch] gap-10 leading-relaxed">
+          {doc.sections.map((section) => (
+            <section key={section.heading} className="grid gap-4">
+              <h2 className="text-xl font-semibold tracking-tight">
+                {section.heading}
+              </h2>
+              {section.paragraphs.map((paragraph) => (
+                <p key={paragraph}>{paragraph}</p>
+              ))}
+              {section.contact ? <ContactLine email={contactEmail} /> : null}
+            </section>
           ))}
         </div>
         <nav aria-label="Legal documents" className="mt-16 border-t pt-8">
           <ul className="flex flex-wrap gap-x-6 gap-y-2 text-sm">
-            {SLUGS.filter((s) => s !== slug).map((other) => (
+            {LEGAL_SLUGS.filter((s) => s !== slug).map((other) => (
               <li key={other}>
                 <Link
                   href={`/legal/${other}`}
                   className="text-primary font-medium underline-offset-4 hover:underline"
                 >
-                  {DOCUMENTS[other].title}
+                  {LEGAL_DOCUMENTS[other].title}
                 </Link>
               </li>
             ))}

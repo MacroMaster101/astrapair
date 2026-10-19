@@ -7,6 +7,9 @@ const PROTECTED_PREFIXES = [
   "/settings",
   "/onboarding",
   "/reset-password",
+  "/chart",
+  "/partner",
+  "/ask",
 ];
 const GUEST_ONLY_PREFIXES = ["/login", "/signup", "/forgot-password"];
 
@@ -23,6 +26,11 @@ export function getRouteAccess(pathname: string): RouteAccess {
   return "public";
 }
 
+// Control characters, whitespace and backslashes are stripped or rewritten by
+// URL parsers ("/<TAB>/evil.com" becomes "//evil.com"), so reject them outright.
+const UNSAFE_NEXT_CHARS = /[\x00-\x20\x7f\\]/;
+const PARSE_BASE = "http://n";
+
 /** Only allow same-origin relative paths, to prevent open redirects. */
 export function safeNextPath(
   next: string | null | undefined,
@@ -32,9 +40,33 @@ export function safeNextPath(
     !next ||
     !next.startsWith("/") ||
     next.startsWith("//") ||
-    next.startsWith("/\\")
+    UNSAFE_NEXT_CHARS.test(next)
   ) {
     return fallback;
   }
-  return next;
+  let url: URL;
+  try {
+    url = new URL(next, PARSE_BASE);
+  } catch {
+    return fallback;
+  }
+  if (url.origin !== PARSE_BASE) return fallback;
+  const normalised = url.pathname + url.search + url.hash;
+  // Dot segments can collapse "/.//evil.com" into a protocol-relative "//evil.com".
+  if (!normalised.startsWith("/") || normalised.startsWith("//")) {
+    return fallback;
+  }
+  // Resolving the result again must stay on the same origin.
+  try {
+    if (new URL(normalised, PARSE_BASE).origin !== PARSE_BASE) return fallback;
+  } catch {
+    return fallback;
+  }
+  return normalised;
+}
+
+/** Where sign up sends a new user, carrying a validated `next` through onboarding. */
+export function onboardingTarget(next: string | null | undefined) {
+  const safe = safeNextPath(next, "");
+  return safe ? `/onboarding?next=${encodeURIComponent(safe)}` : "/onboarding";
 }

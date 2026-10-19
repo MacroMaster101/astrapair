@@ -1,6 +1,8 @@
 "use server";
 
+import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
+import { safeNextPath } from "@/lib/auth/routes";
 import { requireUserId } from "@/lib/auth/session";
 import {
   onboardingSchema,
@@ -8,6 +10,10 @@ import {
   type FormState,
 } from "@/lib/auth/validation";
 import { POLICY_VERSION } from "@/lib/legal";
+import {
+  INVITE_NEXT_COOKIE,
+  resolveOnboardingNext,
+} from "@/lib/partner/next-path";
 import { createClient } from "@/lib/supabase/server";
 
 export async function completeOnboarding(
@@ -30,5 +36,12 @@ export async function completeOnboarding(
   if (error)
     return { error: "We couldn't save your choices. Please try again." };
 
-  redirect("/dashboard");
+  const cookieStore = await cookies();
+  const next = resolveOnboardingNext(
+    formData.get("next")?.toString(),
+    cookieStore.get(INVITE_NEXT_COOKIE)?.value,
+  );
+  cookieStore.delete(INVITE_NEXT_COOKIE);
+
+  redirect(safeNextPath(next, "/dashboard"));
 }

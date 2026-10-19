@@ -8,6 +8,7 @@ const EMAIL_OTP_TYPES = new Set<EmailOtpType>([
   "email",
   "recovery",
   "email_change",
+  "invite",
 ]);
 
 /**

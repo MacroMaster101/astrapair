@@ -21,6 +21,7 @@ export function SignInForm({ next }: { next?: string }) {
         label="Email"
         type="email"
         autoComplete="email"
+        placeholder="you@example.com"
         required
         errors={state.fieldErrors?.email}
       />
@@ -29,6 +30,7 @@ export function SignInForm({ next }: { next?: string }) {
         label="Password"
         type="password"
         autoComplete="current-password"
+        placeholder="Enter your password"
         required
         errors={state.fieldErrors?.password}
       />

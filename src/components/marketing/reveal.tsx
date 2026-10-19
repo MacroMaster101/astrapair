@@ -1,8 +1,9 @@
 "use client";
 
-import { motion, useReducedMotion } from "motion/react";
+import { motion } from "motion/react";
+import { useReducedMotion } from "./use-reduced-motion";
 
-/** Fades content up as it enters the viewport, once. Static under reduced motion. */
+/** Fades content up as it enters the viewport, once. Static and fully visible under reduced motion, once the setting is read. */
 export function Reveal({
   children,
   delay = 0,
@@ -19,10 +20,15 @@ export function Reveal({
   return (
     <Component
       className={className}
-      initial={reduce ? false : { opacity: 0, y: 24 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, amount: 0.25 }}
-      transition={{ duration: 0.7, delay, ease: [0.16, 1, 0.3, 1] }}
+      initial={{ opacity: 0, y: 36 }}
+      animate={reduce ? { opacity: 1, y: 0 } : undefined}
+      whileInView={reduce ? undefined : { opacity: 1, y: 0 }}
+      viewport={{ once: true, amount: 0.15 }}
+      transition={
+        reduce
+          ? { duration: 0 }
+          : { duration: 0.85, delay, ease: [0.16, 1, 0.3, 1] }
+      }
     >
       {children}
     </Component>

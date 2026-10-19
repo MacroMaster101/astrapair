@@ -28,3 +28,11 @@ export const getProfile = cache(async () => {
   if (error) throw new Error("Failed to load profile");
   return data;
 });
+
+/** Like requireUserId, but sends users who haven't finished onboarding back to it. */
+export async function requireOnboardedUserId(): Promise<string> {
+  const userId = await requireUserId();
+  const profile = await getProfile();
+  if (!profile.onboarded_at) redirect("/onboarding");
+  return userId;
+}

@@ -49,6 +49,8 @@ export type FormState = {
   error?: string;
   fieldErrors?: Record<string, string[] | undefined>;
   message?: string;
+  /** A machine-readable reason for `error`, when the form acts on it. */
+  code?: string;
   /** Submitted non-secret values, so fields survive React's post-action form reset. */
   values?: Record<string, string>;
 };

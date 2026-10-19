@@ -42,15 +42,17 @@ export function ResetPasswordForm() {
         label="New password"
         type="password"
         autoComplete="new-password"
+        placeholder="Create a new password"
         required
         minLength={8}
         maxLength={72}
-        hint="At least 8 characters."
+        hint="Use 8–72 characters. A few memorable words work well."
         errors={state.fieldErrors?.password}
       />
       <FormField
         name="confirmPassword"
         label="Confirm new password"
+        placeholder="Enter the same password again"
         type="password"
         autoComplete="new-password"
         required

@@ -16,13 +16,14 @@ export function ThemeToggle({ className }: { className?: string }) {
       type="button"
       onClick={() => setTheme(resolvedTheme === "dark" ? "light" : "dark")}
       aria-label="Toggle dark mode"
+      title="Switch between light and dark mode"
       className={cn(
-        "text-muted-foreground hover:text-foreground hover:bg-accent focus-visible:ring-ring/50 inline-flex size-9 items-center justify-center rounded-full transition-colors outline-none focus-visible:ring-3",
+        "text-muted-foreground hover:text-foreground hover:bg-accent focus-visible:ring-ring/50 inline-flex size-10 shrink-0 items-center justify-center rounded-full transition-colors outline-none focus-visible:ring-3",
         className,
       )}
     >
-      <Sun aria-hidden className="size-[18px] dark:hidden" />
-      <Moon aria-hidden className="hidden size-[18px] dark:block" />
+      <Moon aria-hidden className="size-[18px] dark:hidden" />
+      <Sun aria-hidden className="hidden size-[18px] dark:block" />
     </button>
   );
 }

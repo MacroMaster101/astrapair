@@ -1,5 +1,6 @@
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { PasswordInput } from "@/components/password-input";
 
 type FormFieldProps = React.ComponentProps<typeof Input> & {
   name: string;
@@ -13,6 +14,7 @@ export function FormField({
   label,
   errors,
   hint,
+  type,
   ...inputProps
 }: FormFieldProps) {
   const errorId = `${name}-error`;
@@ -20,18 +22,23 @@ export function FormField({
   const describedBy = [hint && hintId, errors?.length && errorId]
     .filter(Boolean)
     .join(" ");
+  const fieldProps = {
+    id: name,
+    name,
+    className: "h-10",
+    "aria-invalid": errors?.length ? (true as const) : undefined,
+    "aria-describedby": describedBy || undefined,
+    ...inputProps,
+  };
 
   return (
     <div className="grid gap-2">
       <Label htmlFor={name}>{label}</Label>
-      <Input
-        id={name}
-        name={name}
-        className="h-10"
-        aria-invalid={errors?.length ? true : undefined}
-        aria-describedby={describedBy || undefined}
-        {...inputProps}
-      />
+      {type === "password" ? (
+        <PasswordInput {...fieldProps} label={label} />
+      ) : (
+        <Input {...fieldProps} type={type} />
+      )}
       {hint && (
         <p id={hintId} className="text-muted-foreground text-xs">
           {hint}

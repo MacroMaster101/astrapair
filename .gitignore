@@ -158,3 +158,11 @@ supabase/.temp
 
 # Sentry
 .env.sentry-build-plugin
+tests/ai-eval/out/
+
+# AI assistant working files and project docs (kept locally, never committed)
+/.superpowers/
+/.claude/
+/CLAUDE.md
+/AGENTS.md
+/docs/

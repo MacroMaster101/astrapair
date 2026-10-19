@@ -52,6 +52,7 @@ export function ForgotPasswordForm() {
         label="Email"
         type="email"
         autoComplete="email"
+        placeholder="you@example.com"
         required
         errors={state.fieldErrors?.email}
       />

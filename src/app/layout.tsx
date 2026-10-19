@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import { headers } from "next/headers";
 import { ThemeProvider } from "@/components/theme/theme-provider";
 import "./globals.css";
 
@@ -21,21 +22,30 @@ export const metadata: Metadata = {
 
 export const viewport: Viewport = {
   themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#f5f8ff" },
-    { media: "(prefers-color-scheme: dark)", color: "#020a24" },
+    { media: "(prefers-color-scheme: light)", color: "#f7f9fc" },
+    { media: "(prefers-color-scheme: dark)", color: "#080e1b" },
   ],
 };
 
-export default function RootLayout({ children }: LayoutProps<"/">) {
+export default async function RootLayout({ children }: LayoutProps<"/">) {
+  // The proxy makes a fresh nonce per request for the Content-Security-Policy.
+  // Reading it here makes every page render per request, which is accepted.
+  const nonce = (await headers()).get("x-nonce") ?? undefined;
+
   return (
     // next-themes sets the theme class on <html> before hydration.
     <html
       lang="en"
+      data-scroll-behavior="smooth"
       suppressHydrationWarning
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <body className="bg-background text-foreground flex min-h-full flex-col">
-        <ThemeProvider>{children}</ThemeProvider>
+      {/* Browser extensions such as Grammarly add attributes to <body> before React loads. */}
+      <body
+        className="bg-background text-foreground flex min-h-full flex-col"
+        suppressHydrationWarning
+      >
+        <ThemeProvider nonce={nonce}>{children}</ThemeProvider>
       </body>
     </html>
   );

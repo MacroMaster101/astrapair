@@ -9,7 +9,7 @@ import { Label } from "@/components/ui/label";
 import type { FormState } from "@/lib/auth/validation";
 import { completeOnboarding } from "./actions";
 
-export function OnboardingForm() {
+export function OnboardingForm({ next }: { next?: string }) {
   const [state, action, pending] = useActionState(
     completeOnboarding,
     {} as FormState,
@@ -17,6 +17,7 @@ export function OnboardingForm() {
 
   return (
     <form action={action} className="grid gap-5">
+      {next && <input type="hidden" name="next" value={next} />}
       <ConsentCheckbox
         name="ageConfirmed"
         errors={state.fieldErrors?.ageConfirmed}
