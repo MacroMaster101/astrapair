@@ -1060,6 +1060,26 @@ describe("askQuestion", () => {
     expect(storedRows()[1]).toMatchObject({ content: SUPPORTED });
   });
 
+  it("logs why the output was unusable when the provider says so, and a generic code otherwise", async () => {
+    fake.replies = [
+      new AiInvalidOutputError(
+        { inputTokens: 90, outputTokens: 500 },
+        "length",
+      ),
+      new AiInvalidOutputError({ inputTokens: 91, outputTokens: 0 }),
+    ];
+    await askQuestion("thread-1", "What drives me?");
+    const codes = (
+      consoleError.mock.calls as [string, Record<string, string>][]
+    )
+      .filter(([message]) => message === "Assistant failed")
+      .map(([, details]) => [details.stage, details.code]);
+    expect(codes).toEqual([
+      ["validate-1", "length"],
+      ["validate-2", "invalid_output"],
+    ]);
+  });
+
   it("stores the fallback when both calls return invalid output", async () => {
     fake.replies = [
       new AiInvalidOutputError({ inputTokens: 90, outputTokens: 0 }),

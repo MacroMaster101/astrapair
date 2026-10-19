@@ -14,7 +14,7 @@
     "format:check": "prettier --check .",
     "db:types": "supabase gen types typescript --linked --schema public > src/lib/supabase/database.types.ts && prettier --write src/lib/supabase/database.types.ts",
     "test:integration": "vitest run --config vitest.integration.config.mts",
-    "ai:eval": "vitest run --config vitest.ai-eval.config.mts",
+    "ai:eval": "vitest run --config vitest.ai-eval.config.mts --configLoader runner",
     "emails:build": "node scripts/email-templates/build.mjs",
     "ops:report": "node scripts/ops/report.mjs",
     "ops:beta-code": "node scripts/ops/beta-code.mjs",

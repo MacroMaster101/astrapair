@@ -63,6 +63,7 @@ const fake = vi.hoisted(() => ({
   generateCalls: [] as GenerateCall[],
   usageCount: 0,
   dailyReportLimit: 3,
+  config: {} as Record<string, unknown>,
 }));
 
 vi.mock("@/lib/auth/session", () => ({
@@ -100,13 +101,15 @@ vi.mock("@/lib/supabase/admin", () => ({
     },
   }),
 }));
-vi.mock("@/lib/ai/config", () => ({
+vi.mock("@/lib/ai/config", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@/lib/ai/config")>()),
   getAiConfig: () => ({
     provider: "ollama",
     ollamaBaseUrl: "http://127.0.0.1:11434",
     ollamaModel: "test-model",
     dailyQuestionLimit: 30,
     dailyReportLimit: fake.dailyReportLimit,
+    ...fake.config,
   }),
 }));
 // Pass-throughs that a test can make throw once.
@@ -325,6 +328,7 @@ beforeEach(() => {
   fake.generateCalls = [];
   fake.usageCount = 0;
   fake.dailyReportLimit = 3;
+  fake.config = {};
   consoleError = vi.spyOn(console, "error").mockImplementation(() => {});
 });
 
@@ -387,6 +391,37 @@ describe("getReportState", () => {
     fake.reportRow = { data: readyRow("0".repeat(64)), error: null };
     const state = await getReportState();
     expect(state).toMatchObject({ kind: "ready", outOfDate: true });
+  });
+
+  it("does not mark a stored report out of date while AI is disabled or has no model", async () => {
+    for (const config of [
+      { provider: "disabled" },
+      { provider: "openai", openaiModel: null },
+    ]) {
+      fake.config = config;
+      fake.reportRow = { data: readyRow("0".repeat(64)), error: null };
+      expect(await getReportState()).toMatchObject({
+        kind: "ready",
+        outOfDate: false,
+      });
+    }
+  });
+
+  it("keys the cached report on the OpenAI model when OpenAI is the provider", async () => {
+    fake.config = { provider: "openai", openaiModel: "hosted-model" };
+    fake.reportRow = {
+      data: readyRow(cacheKey(makeContext().synastryKey!, "hosted-model")),
+      error: null,
+    };
+    expect(await getReportState()).toMatchObject({
+      kind: "ready",
+      outOfDate: false,
+    });
+    fake.reportRow = { data: readyRow(currentKey()), error: null };
+    expect(await getReportState()).toMatchObject({
+      kind: "ready",
+      outOfDate: true,
+    });
   });
 
   it("returns generating while a recent generation runs", async () => {
@@ -966,6 +1001,25 @@ describe("generateReport", () => {
     expect(retryLines()).toContain(REPORT_RETRY_INSTRUCTION);
     expect(retryLines().join(" ")).not.toContain("These were not in the facts");
     expect(retryLines()).not.toContain(POLICY_RETRY_INSTRUCTION);
+  });
+
+  it("logs why the output was unusable when the provider says so, and unparseable otherwise", async () => {
+    const spent = { inputTokens: 900, outputTokens: 3000 };
+    fake.replies = [
+      new AiInvalidOutputError(spent, "length"),
+      new AiInvalidOutputError(spent),
+    ];
+    await generateReport();
+    const codes = (
+      consoleError.mock.calls as [string, Record<string, string>][]
+    )
+      .filter(([message]) => message === "Report generation failed")
+      .map(([, details]) => [details.stage, details.code])
+      .filter(([stage]) => stage.startsWith("validate"));
+    expect(codes).toEqual([
+      ["validate-1", "length"],
+      ["validate-2", "unparseable"],
+    ]);
   });
 
   it("releases the claim with invalid_output after two unparseable answers", async () => {
