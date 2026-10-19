@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<meta name="supported-color-schemes" content="light dark">
+<style>
+  :root { color-scheme: light dark; supported-color-schemes: light dark; }
+  @media (prefers-color-scheme: dark) {
+    .ap-page { background-color: #020a24 !important; }
+    .ap-heading { color: #eaf0ff !important; }
+    .ap-text { color: #9fb0de !important; }
+    .ap-rule { border-top-color: #1c2d66 !important; }
+    .ap-link { color: #7c9bff !important; }
+    .ap-code { background-color: #0a1a4a !important; color: #eaf0ff !important; }
+  }
+  [data-ogsc] .ap-heading { color: #eaf0ff !important; }
+  [data-ogsc] .ap-text { color: #9fb0de !important; }
+  [data-ogsc] .ap-link { color: #7c9bff !important; }
+  [data-ogsb] .ap-page { background-color: #020a24 !important; }
+  [data-ogsb] .ap-code { background-color: #0a1a4a !important; }
+</style>
+<title>AstraPair</title>
+</head>
+<body class="ap-page" style="margin:0;padding:0;background:#ffffff;">
+<div style="display:none;max-height:0;overflow:hidden;opacity:0;">One click and you can add your birth details.</div>
+<table role="presentation" class="ap-page" width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#ffffff">
+  <tr>
+    <td align="center" style="padding:40px 16px;">
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width:480px;">
+        <tr>
+          <td align="center" style="padding:0 0 32px;">
+            <img src="{{ .SiteURL }}/brand/email-logo.png" width="56" height="56" alt="" style="display:block;margin:0 auto 12px;border:0;">
+            <p style="margin:0;font-family:-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;font-size:17px;font-weight:700;text-align:center;"><span class="ap-heading" style="color:#0a1840;">Astra</span><span class="ap-link" style="color:#0949eb;">Pair</span></p>
+          </td>
+        </tr>
+        <tr>
+          <td align="center" style="padding:0 16px;">
+            <h1 class="ap-heading" style="margin:0 0 12px;font-family:-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;font-size:26px;line-height:1.25;font-weight:700;color:#0a1840;text-align:center;">Welcome{{ if .Data.display_name }}, {{ .Data.display_name }}{{ end }}</h1>
+            <p class="ap-text" style="margin:0 0 28px;font-family:-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;font-size:16px;line-height:1.6;color:#51608a;text-align:center;">Confirm your email address to finish creating your account. Next, you'll add your birth details and we'll calculate your chart.</p>
+            <table role="presentation" align="center" cellpadding="0" cellspacing="0" border="0" style="margin:0 auto;">
+  <tr>
+    <td align="center" bgcolor="#0949eb" style="border-radius:999px;">
+      <a href="{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=email&next=/onboarding" target="_blank" style="display:inline-block;padding:15px 36px;font-family:-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;font-size:16px;font-weight:600;line-height:1;color:#ffffff;text-decoration:none;border-radius:999px;">Confirm email</a>
+    </td>
+  </tr>
+</table>
+            <p class="ap-text ap-rule" style="margin:36px 0 0;padding-top:22px;border-top:1px solid #e8eefc;font-family:-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;font-size:13px;line-height:1.6;color:#51608a;text-align:center;">Didn't sign up? Ignore this email and no account will be created.</p>
+            <p class="ap-text" style="margin:14px 0 0;font-family:-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;font-size:12px;line-height:1.6;color:#51608a;text-align:center;">Button not working? Paste this link into your browser:<br><a class="ap-link" href="{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=email&next=/onboarding" style="color:#0949eb;word-break:break-all;">{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=email&next=/onboarding</a></p>
+          </td>
+        </tr>
+        <tr>
+          <td class="ap-text" align="center" style="padding:32px 16px 0;font-family:-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;font-size:12px;line-height:1.8;color:#51608a;text-align:center;">
+            Astrology on AstraPair is for entertainment and self-reflection.<br>
+            <a class="ap-text" href="{{ .SiteURL }}/legal/privacy" style="color:#51608a;text-decoration:underline;">Privacy</a> &nbsp;&nbsp; <a class="ap-text" href="{{ .SiteURL }}/legal/terms" style="color:#51608a;text-decoration:underline;">Terms</a>
+          </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+</table>
+</body>
+</html>

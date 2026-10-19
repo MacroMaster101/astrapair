@@ -141,3 +141,28 @@ dist
 vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
 .vite/
+
+# Next.js
+next-env.d.ts
+.vercel
+
+# Supabase CLI
+supabase/.branches
+supabase/.temp
+
+# Playwright
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/
+
+# Sentry
+.env.sentry-build-plugin
+tests/ai-eval/out/
+
+# AI assistant working files and project docs (kept locally, never committed)
+/.superpowers/
+/.claude/
+/CLAUDE.md
+/AGENTS.md
+/docs/

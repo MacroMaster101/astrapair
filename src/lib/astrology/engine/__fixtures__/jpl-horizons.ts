@@ -1,0 +1,70 @@
+import type { Body } from "../../types";
+
+/**
+ * Apparent geocentric ecliptic longitudes (true ecliptic and equinox of date),
+ * degrees, from NASA JPL Horizons (https://ssd.jpl.nasa.gov/horizons/),
+ * EPHEM_TYPE=OBSERVER, CENTER=500@399, QUANTITIES=31, TIME_TYPE=UT.
+ * Fetched 2026-09-29.
+ */
+export const JPL_HORIZONS_LONGITUDES: Record<string, Record<Body, number>> = {
+  "1955-11-05T23:59:00Z": {
+    sun: 222.7937,
+    moon: 120.97038,
+    mercury: 206.53639,
+    venus: 239.89346,
+    mars: 195.10233,
+    jupiter: 148.79365,
+    saturn: 232.49962,
+    uranus: 122.334,
+    neptune: 208.52771,
+    pluto: 148.45506,
+  },
+  "1975-03-21T18:45:00Z": {
+    sun: 0.52988,
+    moon: 102.49319,
+    mercury: 337.49066,
+    venus: 32.2764,
+    mars: 314.01469,
+    jupiter: 0.74666,
+    saturn: 101.99522,
+    uranus: 211.66102,
+    neptune: 251.78113,
+    pluto: 188.10184,
+  },
+  "1990-07-15T06:30:00Z": {
+    sun: 112.52754,
+    moon: 20.04632,
+    mercury: 126.34199,
+    venus: 84.13646,
+    mars: 31.78854,
+    jupiter: 112.49793,
+    saturn: 291.98057,
+    uranus: 276.97553,
+    neptune: 282.92727,
+    pluto: 225.0008,
+  },
+  "2000-01-01T12:00:00Z": {
+    sun: 280.36891,
+    moon: 223.32379,
+    mercury: 271.88927,
+    venus: 241.56578,
+    mars: 327.96329,
+    jupiter: 25.25307,
+    saturn: 40.39564,
+    uranus: 314.80917,
+    neptune: 303.193,
+    pluto: 251.45476,
+  },
+  "2012-12-21T11:11:00Z": {
+    sun: 269.99956,
+    moon: 14.23752,
+    mercury: 254.69822,
+    venus: 246.58613,
+    mars: 296.4277,
+    jupiter: 68.90078,
+    saturn: 218.66103,
+    uranus: 4.641,
+    neptune: 330.81345,
+    pluto: 278.94938,
+  },
+};
